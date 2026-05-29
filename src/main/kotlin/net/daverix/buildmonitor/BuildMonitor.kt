@@ -42,7 +42,19 @@ data class JenkinsJob(
 data class JenkinsJobs(val jobs: List<JenkinsJob>)
 
 suspend fun main(args: Array<String>) {
-    val host = args[0]
+    var host: String? = null
+    var authors: List<String> = emptyList()
+
+    var i = 0
+    while (i < args.size) {
+        when (args[i]) {
+            "--authors" -> authors = args[++i].split(",").map { it.trim() }
+            else -> host = args[i]
+        }
+        i++
+    }
+
+    requireNotNull(host) { "Usage: build-monitor <jenkins-url> [--authors <name1,name2>]" }
 
     val client = HttpClient(CIO) {
         install(ContentNegotiation) {
@@ -67,6 +79,7 @@ suspend fun main(args: Array<String>) {
                 emptyList()
         }
         .sortedBy { it.lastBuild?.timestamp }
+        .filter { it.matchesAuthors(authors) }
 
     val failedBuilds = enabledJobs.filter { it.lastBuild != null && it.lastBuild.number == it.lastFailedBuild?.number }
     val unstableBuilds = enabledJobs.filter { it.lastBuild != null && it.lastBuild.number == it.lastUnstableBuild?.number }
@@ -107,6 +120,14 @@ suspend fun main(args: Array<String>) {
 
     println("This is ${styled("pretty", strike = true, color = TextColor.Cyan)} ${
         styled("cool", color = TextColor.Red)} ${styled("😹 \uD83D\uDE9A", color = TextColor.Yellow)}")
+}
+
+private fun JenkinsJob.matchesAuthors(authors: List<String>): Boolean {
+    if (authors.isEmpty()) return true
+    val culprits = lastBuild?.culprits ?: return false
+    return authors.any { author ->
+        culprits.any { culprit -> culprit.fullName.contains(author, ignoreCase = true) }
+    }
 }
 
 private fun printJob(job: JenkinsJob, color: TextColor) {
