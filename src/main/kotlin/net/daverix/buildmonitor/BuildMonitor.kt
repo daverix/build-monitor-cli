@@ -44,17 +44,19 @@ data class JenkinsJobs(val jobs: List<JenkinsJob>)
 suspend fun main(args: Array<String>) {
     var host: String? = null
     var authors: List<String> = emptyList()
+    var excludePattern: Regex? = null
 
     var i = 0
     while (i < args.size) {
         when (args[i]) {
             "--authors" -> authors = args[++i].split(",").map { it.trim() }
+            "--exclude" -> excludePattern = Regex(args[++i])
             else -> host = args[i]
         }
         i++
     }
 
-    requireNotNull(host) { "Usage: build-monitor <jenkins-url> [--authors <name1,name2>]" }
+    requireNotNull(host) { "Usage: build-monitor <jenkins-url> [--authors <name1,name2>] [--exclude <regex>]" }
 
     val client = HttpClient(CIO) {
         install(ContentNegotiation) {
@@ -80,6 +82,7 @@ suspend fun main(args: Array<String>) {
         }
         .sortedBy { it.lastBuild?.timestamp }
         .filter { it.matchesAuthors(authors) }
+        .filter { job -> excludePattern == null || !excludePattern.containsMatchIn(URLDecoder.decode(job.fullName, "UTF-8")) }
 
     val failedBuilds = enabledJobs.filter { it.lastBuild != null && it.lastBuild.number == it.lastFailedBuild?.number }
     val unstableBuilds = enabledJobs.filter { it.lastBuild != null && it.lastBuild.number == it.lastUnstableBuild?.number }

@@ -34,6 +34,21 @@ To filter builds by author, pass `--authors` with a comma-separated list of part
 
 A build is shown if **any** of its culprits' names contain **any** of the provided terms.
 
+## Excluding builds
+
+Use `--exclude` with a regex pattern to hide builds whose name matches:
+
+```bash
+./gradlew run --args="https://ci.example.com --exclude .*-nightly"
+./gradlew run --args="https://ci.example.com --exclude ^release-deploy"
+```
+
+Both `--authors` and `--exclude` can be combined:
+
+```bash
+./gradlew run --args="https://ci.example.com --authors david --exclude .*-nightly"
+```
+
 ### With the distribution (production)
 
 Build a distributable archive:
