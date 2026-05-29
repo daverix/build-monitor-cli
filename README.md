@@ -25,6 +25,15 @@ Example:
 ./gradlew run --args="https://ci.example.com"
 ```
 
+To filter builds by author, pass `--authors` with a comma-separated list of partial names (case-insensitive):
+
+```bash
+./gradlew run --args="https://ci.example.com --authors david"
+./gradlew run --args="https://ci.example.com --authors david,john"
+```
+
+A build is shown if **any** of its culprits' names contain **any** of the provided terms.
+
 ### With the distribution (production)
 
 Build a distributable archive:
