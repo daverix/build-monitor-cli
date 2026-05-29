@@ -86,24 +86,33 @@ suspend fun main(args: Array<String>) {
     val ongoingBuilds = enabledJobs.filter { it.lastBuild?.building == true }
 
     println("Unstable builds:")
+    println()
     unstableBuilds.forEach { job ->
         printJob(
             job = job,
             color = TextColor.Yellow
         )
     }
+    if (unstableBuilds.isEmpty()) {
+        println("No unstable builds! ✨")
+    }
     println()
 
     println("Failed builds:")
+    println()
     failedBuilds.forEach { job ->
         printJob(
             job = job,
             color = TextColor.Red
         )
     }
+    if (failedBuilds.isEmpty()) {
+        println("No failed builds! ✨")
+    }
     println()
 
     println("Ongoing builds:")
+    println()
     val now = System.currentTimeMillis()
     ongoingBuilds.forEach { job ->
         val progress = job.lastBuild?.let { lastBuild ->
@@ -116,10 +125,11 @@ suspend fun main(args: Array<String>) {
             color = TextColor.Blue
         )
     }
-    println()
-
-    println("This is ${styled("pretty", strike = true, color = TextColor.Cyan)} ${
-        styled("cool", color = TextColor.Red)} ${styled("😹 \uD83D\uDE9A", color = TextColor.Yellow)}")
+    if (ongoingBuilds.isEmpty()) {
+        println()
+        println("No builds in progress")
+        println()
+    }
 }
 
 private fun JenkinsJob.matchesAuthors(authors: List<String>): Boolean {
