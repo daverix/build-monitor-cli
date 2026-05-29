@@ -129,10 +129,9 @@ suspend fun main(args: Array<String>) {
         )
     }
     if (ongoingBuilds.isEmpty()) {
-        println()
         println("No builds in progress")
-        println()
     }
+    println()
 }
 
 private fun JenkinsJob.matchesAuthors(authors: List<String>): Boolean {
